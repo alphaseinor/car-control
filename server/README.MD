@@ -37,23 +37,41 @@ left front headlight with circuits:
 * 5 horn
 
 0000 0000 1011 1100 = 188 Your coding for this module would be 188
+
 ^^^^ ^^^^ ^^^^ ^^^^
+
 |||| |||| |||| ||||
+
 |||| |||| |||| |||+-= Left
+
 |||| |||| |||| ||+--= Front
+
 |||| |||| |||| |+=--= Headlight (connected)
+
 |||| |||| |||| +----= Marker (connected)
+
 |||| |||| |||+------= Flasher (connected)
+
 |||| |||| ||+-------= High Beam (connected)
+
 |||| |||| |+--------= Fog Light (not connected)
+
 |||| |||| +---------= Horn (connected)
+
 |||| |||+-----------= optional (not connected)
+
 |||| ||+------------= optional (not connected)
+
 |||| |+-------------= optional (not connected)
+
 |||| +--------------= optional (not connected)
+
 |||+----------------= optional (not connected)
+
 ||+-----------------= optional (not connected)
+
 |+------------------= optional (not connected)
+
 +-------------------= optional (not connected)
 
 ```
@@ -62,6 +80,8 @@ CODING=188
 
 ## api example data
 ### GET /api
+
+```
 
 {
     coding: 188
@@ -126,10 +146,17 @@ CODING=188
     ] 
 }
 
+```
+
 ### POST /api/circuit/0
+
+```
 
 {
     state: "off"
 }
+
+```
+
 
 if state: "disabled", it will return error: "cannot disable, update coding" state: "disabled"

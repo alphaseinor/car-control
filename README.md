@@ -35,7 +35,7 @@ We may look into these at a future date.
 
 i.e 
 
-A PUT request to ``` /api/headlight ``` would change the state of the headlight to on or off as commanded by the client. 
+A PUT request to ``` /api/circuit/0 ``` would change the state of a headlight module to on or off as commanded by the client. 
 
 A GET request to ``` /api/ ``` would get a json object with all available controls, and their current state
 
