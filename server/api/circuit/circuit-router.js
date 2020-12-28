@@ -92,7 +92,7 @@ const checkDisabled= (req, res, next) => {
 }
 
 
-let blinkInterval = setInterval(blinkLED, 500);
+setInterval(blinkLED, 500);
 let blinkState = true;
 
 function blinkLED() {
@@ -110,12 +110,6 @@ function blinkLED() {
     blinkState = !blinkState
 }
 
-// not needed because we will use this the whole time it's up
-// function endBlink(id) {
-//   clearInterval(blinkInterval)
-//   LED[2].writeSync(0)
-//   LED[2].unexport()
-// }
 
 router.post('/reset', async (req,res) => {
     await initState()
