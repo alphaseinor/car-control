@@ -58,83 +58,42 @@ CODING=47
 ```
 
 ## api example data
-### GET /api
+### GET /circuit
 
 ```
 
 {
-    coding: 47
+    coding: 47,
     circuit: [
         {
+            circuit: 0,
             error: "none",
             state: "on"
-        },
-        {
+        },{
+            circuit: 1,
             error: "none",
             state: "on"
-        },
-        {
+        },{
+            circuit: 2,
             error: "none",
             state: "on"
-        },
-        {
+        },{
+            circuit: 3,
             error: "none",
             state: "on"
-        },
-        {
+        },{
+            circuit: 5,
             error: "none",
             state: "on"
-        },
-        {
-            error: "none",
-            state: "on"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "on"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
-        {
-            error: "none",
-            state: "disabled"
-        },
+        }
     ] 
 }
 
 ```
 
 ### POST /api/circuit/0
+
+State key can be set to "on", "off", or "flashing" using POST on all enabled circuits. It will not give feedback to existing state other than "disabled"
 
 Posting data:
 
@@ -163,22 +122,12 @@ if state: "disabled" return
 ```
 
 {
-    error: "cannot disable, update coding value to enable this circuit", 
-    state: "disabled"
+    error: "State is disabled on circuit 0, you must recode module to allow this output to be used"
 }
 
 ```
 
-if circuit did not return correctly 
 
-```
-
-{
-    error: "state did not change",
-    state: "on"
-}
-
-```
 
 ## Circuits
 
