@@ -6,26 +6,6 @@ let state = {
     circuit: [] 
 }
 
-
-// let LED = [
-    // new Gpio(4, 'out'),
-    // new Gpio(17, 'out'),
-    // new Gpio(18, 'out'),
-    // new Gpio(27, 'out'),
-    // new Gpio(22, 'out'),
-    // new Gpio(23, 'out'),
-    // new Gpio(24, 'out'),
-    // new Gpio(25, 'out'),
-    // new Gpio(5, 'out'),
-    // new Gpio(6, 'out'),
-    // new Gpio(12, 'out'),
-    // new Gpio(13, 'out'),
-    // new Gpio(19, 'out'),
-    // new Gpio(16, 'out'),
-    // new Gpio(26, 'out'),
-    // new Gpio(20, 'out')
-// ]
-
 let LED = {
     0: 4,
     1: 17,
@@ -45,21 +25,23 @@ let LED = {
     15: 20
 }
 
-const initGPIO = () => {
-    for(let i = 0; i < 16; i++){
-        if(state.circuit[i].gpio){
-            state.circuit[i].gpio.writeSync(0)
-        }
-    }
-}
-
 //initialize 16 circuit states to off or disabled
 let initState = async () => {
+    const initGPIO = () => {
+        for(let i = 0; i < 16; i++){
+            if(state.circuit[i].gpio){
+                state.circuit[i].gpio.writeSync(0)
+            }
+        }
+        return true
+    }
+
     for(let i = 15; i >= 0; i--){
         if(state.coding - Math.pow(2,i) >= 0){
             state.coding = state.coding - Math.pow(2,i)
             state.circuit = [...state.circuit, 
                 {
+                    circuit: i,
                     error: "none",
                     state: "off",
                     gpio: new Gpio(LED[i + ""], 'out')
@@ -74,18 +56,14 @@ let initState = async () => {
             ]
         }
     }
-    return await initGPIO()
-    
+    finished = await initGPIO()
+    state.circuit = state.circuit.reverse()
+    state.coding = parseInt(process.env.CODING)
+    console.log(state)
+    return finished
 }
 
 initState()
-
-state.circuit = state.circuit.reverse()
-state.coding = parseInt(process.env.CODING)
-console.log(state)
-
-
-
 
 const checkBody = (req, res, next) => {
     if(!req.body.state){
@@ -115,15 +93,21 @@ const checkDisabled= (req, res, next) => {
 
 
 let blinkInterval = setInterval(blinkLED, 500);
+let blinkState = true;
 
 function blinkLED() {
-    if(state.circuit[2].state == "on"){
-        if (state.circuit[2].gpio.readSync() === 0) {
-            state.circuit[2].gpio.writeSync(1)
-        } else {
-            state.circuit[2].gpio.writeSync(0)
+    for(let i = 0; i< 16; i++){
+        if(state.circuit[i].state == "flash"){
+            if(state.circuit[i].gpio){
+                if (blinkState) {
+                    state.circuit[i].gpio.writeSync(1)
+                } else {
+                    state.circuit[i].gpio.writeSync(0)
+                }
+            }
         }
     }
+    blinkState = !blinkState
 }
 
 // not needed because we will use this the whole time it's up
@@ -146,10 +130,16 @@ router.post('/:id', checkBody, checkDisabled, async (req, res) =>{
         state.circuit[id].state = "on"
         res.status(200).json({error: "none", circuit: id, state: "on"})
     }else{
-        console.log(`circuit ${id} is now off`)
-        state.circuit[id].gpio.writeSync(0)
-        state.circuit[id].state = "off"
-        res.status(200).json({error: "none", circuit: id, state: "off"})
+        if(req.body.state == "flash"){
+            console.log(`circuit ${id} is now flashing`)
+            state.circuit[id].state = "flash"
+            res.status(200).json({error: "none", circuit: id, state: "flash"})
+        }else{
+            console.log(`circuit ${id} is now off`)
+            state.circuit[id].gpio.writeSync(0)
+            state.circuit[id].state = "off"
+            res.status(200).json({error: "none", circuit: id, state: "off"})
+        }
     }
 })
 
@@ -159,7 +149,21 @@ router.get('/:id', (req, res) => {
 })
 
 router.get('/', (req, res) => {
-    res.status(200).json({error: "none", state})
+    res.status(200).json({
+        error: "none", 
+        state: {
+            ...state, 
+            circuit: state.circuit.filter(item=>{
+                return item.state !== "disabled"
+            }).map((item) => {
+                return {
+                    circuit: item.circuit,
+                    state: item.state,
+                    error: item.error
+                }
+            })
+        }
+    })
 })
 
 module.exports =  { router }
