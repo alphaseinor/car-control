@@ -1,32 +1,37 @@
 var Gpio = require('onoff').Gpio
 const router = require('express').Router()
 
+//---------------------------------------------------------   STATE
+
 let state = {
     coding: parseInt(process.env.CODING),
     circuit: [] 
 }
 
-let LED = {
-    0: 4,
-    1: 17,
-    2: 18,
-    3: 27,
-    4: 22,
-    5: 23,
-    6: 24,
-    7: 25,
-    8: 5,
-    9: 6,
-    10: 12,
-    11: 13,
-    12: 19,
-    13: 16,
-    14: 26,
-    15: 20
-}
+let initState = () => {
 
-//initialize 16 circuit states to off or disabled
-let initState = async () => {
+    // LED is the circuit numbers mapped to broadcom GPIO pins
+    // These are not the actual rPi pins
+    let LED = {
+        0: 4,
+        1: 17,
+        2: 18,
+        3: 27,
+        4: 22,
+        5: 23,
+        6: 24,
+        7: 25,
+        8: 5,
+        9: 6,
+        10: 12,
+        11: 13,
+        12: 19,
+        13: 16,
+        14: 26,
+        15: 20
+    }
+
+    //Async issues, needed to separate this into a different function for after the loop is done
     const initGPIO = () => {
         for(let i = 0; i < 16; i++){
             if(state.circuit[i].gpio){
@@ -36,6 +41,7 @@ let initState = async () => {
         return true
     }
 
+    //initialize 16 circuit states to off or disabled
     for(let i = 15; i >= 0; i--){
         if(state.coding - Math.pow(2,i) >= 0){
             state.coding = state.coding - Math.pow(2,i)
@@ -56,14 +62,19 @@ let initState = async () => {
             ]
         }
     }
-    finished = await initGPIO()
+    //wait for initGPIO to finish looping, and give it some sort of value to return
+    initGPIO()
+    //we initialized the array backwards, so let's reverse it
     state.circuit = state.circuit.reverse()
+    //since we mutated state.coding to save a variable, let's refresh it
     state.coding = parseInt(process.env.CODING)
-    console.log(state)
-    return finished
 }
 
+// invoke state initialization
+
 initState()
+
+//---------------------------------------------------------   MIDDLEWARE
 
 const checkBody = (req, res, next) => {
     if(!req.body.state){
@@ -91,6 +102,7 @@ const checkDisabled= (req, res, next) => {
     }    
 }
 
+//---------------------------------------------------------   FLASHER LOOP
 
 setInterval(blinkLED, 500);
 let blinkState = true;
@@ -110,6 +122,7 @@ function blinkLED() {
     blinkState = !blinkState
 }
 
+//---------------------------------------------------------   POST
 
 router.post('/reset', async (req,res) => {
     await initState()
@@ -136,6 +149,8 @@ router.post('/:id', checkBody, checkDisabled, async (req, res) =>{
         }
     }
 })
+
+//---------------------------------------------------------   GET
 
 router.get('/:id', (req, res) => {
     const id = req.params.id
