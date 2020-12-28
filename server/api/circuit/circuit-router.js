@@ -9,48 +9,53 @@ let state = {
 
 let LED = [
     new Gpio(4, 'out'),
-    new Gpio(11, 'out'),
+    new Gpio(17, 'out'),
+    new Gpio(18, 'out'),
+    new Gpio(27, 'out'),
+    new Gpio(22, 'out'),
+    new Gpio(23, 'out'),
+    new Gpio(24, 'out'),
+    new Gpio(25, 'out'),
+    new Gpio(5, 'out'),
+    new Gpio(6, 'out'),
     new Gpio(12, 'out'),
     new Gpio(13, 'out'),
-    new Gpio(15, 'out'),
+    new Gpio(19, 'out'),
     new Gpio(16, 'out'),
-    new Gpio(18, 'out'),
-    new Gpio(22, 'out'),
-    new Gpio(29, 'out'),
-    new Gpio(31, 'out'),
-    new Gpio(32, 'out'),
-    new Gpio(33, 'out'),
-    new Gpio(35, 'out'),
-    new Gpio(36, 'out'),
-    new Gpio(37, 'out'),
-    new Gpio(38, 'out')
+    new Gpio(26, 'out'),
+    new Gpio(20, 'out')
 ]
 
 //initialize 16 circuit states to off or disabled
-for(let i = 15; i >= 0; i--){
-    //{
-    //     error: "none",
-    //     state: "disabled"
-    // }
-    LED[i].writeSync(0)
-    if(state.coding - Math.pow(2,i) >= 0){
-        state.coding = state.coding - Math.pow(2,i)
-        state.circuit = [...state.circuit, 
-            {
-                error: "none",
-                state: "off"
-            }
-        ]
-    } else {
-        state.circuit = [...state.circuit, 
-            {
-                error: "none",
-                state: "disabled"
-            }
-        ]
-    }
+let initState = () => {
+    for(let i = 15; i >= 0; i--){
+        //{
+        //     error: "none",
+        //     state: "disabled"
+        // }
+        LED[i].writeSync(0)
+        if(state.coding - Math.pow(2,i) >= 0){
+            state.coding = state.coding - Math.pow(2,i)
+            state.circuit = [...state.circuit, 
+                {
+                    error: "none",
+                    state: "off"
+                }
+            ]
+        } else {
+            state.circuit = [...state.circuit, 
+                {
+                    error: "none",
+                    state: "disabled"
+                }
+            ]
+        }
 
+    }
+    return true
 }
+
+initState()
 
 state.circuit = state.circuit.reverse()
 state.coding = parseInt(process.env.CODING)
@@ -78,6 +83,11 @@ const checkDisabled= (req, res, next) => {
     }
     
 }
+
+router.post('/reset', async (req,res) => {
+    await initState()
+    res.status(200).json({error: "none", state})
+})
 
 router.post('/:id', checkDisabled, checkBody, async (req, res) =>{
     const id = req.params.id

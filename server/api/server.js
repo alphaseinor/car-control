@@ -10,7 +10,7 @@ server.use(express.json());
 server.use('/circuit', circuitRouter)
 
 server.use('/', (req, res)=>{
-  res.status(200).json({error: false, state: state})
+  res.status(200).json({error: "none", coding: process.env.CODING})
 })
 
 
