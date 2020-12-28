@@ -54,7 +54,7 @@ Module with circuits:
 ```
 
 ```
-CODING=
+CODING=47
 ```
 
 ## api example data
