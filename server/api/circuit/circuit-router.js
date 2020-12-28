@@ -60,26 +60,47 @@ console.log(state)
 const checkBody = (req, res, next) => {
     if(!req.body.state){
         console.log("checkBody: missing state in body")
-        res.status(500).json({error : "missing state in body"})
+        res.status(500).json({error : "missing state in body",  circuit: id})
+    }else{
+        next()
     }
-    next()
-} 
+}
 
-router.post('/:id', checkBody, async (req, res) =>{
+const checkDisabled= (req, res, next) => {
+    
+    let id = req.params.id
+
+    if(state.circuit[id].state == "disabled"){
+        console.log(`checkDisabled: State is disabled on circuit ${id}, you must recode module to allow this output to be used`)
+        res.status(500).json({error : `State is disabled on circuit ${id}, you must recode module to allow this output to be used`})
+    }else{
+        next()
+    }
+    
+}
+
+router.post('/:id', checkDisabled, checkBody, async (req, res) =>{
     const id = req.params.id
     if(req.body.state == "on"){
         console.log(`circuit ${id} is now on`)
         LED[id].writeSync(1)
         state.circuit[id].state = "on"
-        res.status(200).json({error: "none", state: "on"})
+        res.status(200).json({error: "none", circuit: id, state: "on"})
     }else{
         console.log(`circuit ${id} is now off`)
         LED[id].writeSync(0)
         state.circuit[id].state = "off"
-        res.status(200).json({error: "none", state: "off"})
+        res.status(200).json({error: "none", circuit: id, state: "off"})
     }
 })
 
-router.get('/:id')
+router.get('/:id', (req, res) => {
+    const id = req.params.id
+    res.status(200).json({error: "none", circuit: id, state: state.circuit[id]})
+})
+
+router.get('/', (req, res) => {
+    res.status(200).json({error: "none", state})
+})
 
 module.exports =  { router }
