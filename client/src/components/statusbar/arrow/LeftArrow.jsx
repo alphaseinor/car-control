@@ -1,7 +1,15 @@
-import React from "react"
+import React, {useState} from "react"
 import Arrow from "./arrow.svg"
 
-const LeftArrow = ({setButton, onOff}) => {
+const LeftArrow = () => {
+
+    const [onOff, setOnOff] = useState(false)
+
+    const setButton = (e) => {
+        e.preventDefault()
+        setOnOff(!onOff)
+    }
+
     return (<>
     <button
         className={onOff ? "on" : "off"}
